@@ -67,19 +67,52 @@ def parse(expression, variables):
     return get_result(get_postfix())
 
 
-def create_table(expression, count, variables):
-    table = PrettyTable(variables + ['F'])
-    vector = ''
-    for i in product((0, 1), repeat=len(variables)):
-        var_values = dict(zip(variables, i))
-        parsed = parse(expression, var_values)
-        table.add_row(list(var_values.values()) + [parsed])
-        vector += str(parsed)
-    print(table)
-    print(f'{expression} -> {vector}')
+def get_data_for_function(expression, variables):
+    trush_table = []
 
-expression = input("Введите выражение >>> ")
-count = int(input("Введите кол-во переменных >>> "))
-variables = sorted([input("Введите переменную >>> ") for _ in range(count)])
+    def get_trush_table():
+        table_init = PrettyTable(variables + ['F'])
+        vector = ''
+        for i in product((0, 1), repeat=len(variables)):
+            var_values = dict(zip(variables, i))
+            parsed = parse(expression, var_values)
+            trush_table.append(list(var_values.values()) + [int(parsed)])
+            vector += str(int(parsed))
+        table_init.add_rows(trush_table)
+        print(table_init)
+        print(f'{expression} -> {vector}')
 
-create_table(expression, count, variables)
+    get_trush_table()
+
+    def get_sdnf():
+        sdnf_disjuncts = []
+        for row in trush_table:
+            if row[-1] == 1:
+                conjuncts = []
+                for var, var_value in zip(variables, row[:-1]):
+                    if var_value == 1:
+                        conjuncts.append(var)
+                    else:
+                        conjuncts.append(f'!{var}')
+                sdnf_disjuncts.append('&'.join(conjuncts))
+        print("СДНФ: ", ' | '.join(sdnf_disjuncts))
+
+    get_sdnf()
+
+
+def main():
+    try:
+        count = int(input("Введите кол-во переменных >>> "))
+        variables = sorted([input("Введите переменную >>> ") for _ in range(count)])
+        expression = input("Введите выражение >>> ")
+        get_data_for_function(expression, variables)
+    except ValueError:
+        print("Неверный формат числа")
+        main()
+    except IndexError:
+        print("Неверный формат выражения")
+        main()
+
+
+if __name__ == "__main__":
+    main()
