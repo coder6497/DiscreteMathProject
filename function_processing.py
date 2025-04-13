@@ -29,6 +29,6 @@ def get_sdnf(variables):
                 else:
                     conjuncts.append(f'!{var}')
             sdnf_disjuncts.append('&'.join(conjuncts))
-    return "СДНФ: ", ' | '.join(sdnf_disjuncts) # Собираем СДНФ
+    return "СДНФ: " + ' | '.join(sdnf_disjuncts) # Собираем СДНФ
 
 trush_table.clear()
