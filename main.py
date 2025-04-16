@@ -67,37 +67,28 @@ def parse(expression, variables): # Функция для парсинга ло�
     return get_result(get_postfix())
 
 
-def get_data_for_function(expression, variables): # Здесь мы получаем результат (СДНФ таблица истинности)
+def get_trush_table(expression, variables): # Здесь мы получаем результат (СДНФ таблица истинности)
     trush_table = []
+    vector = ''
+    for i in product((0, 1), repeat=len(variables)): # Перебираем нули и единицы и создаем словарь по типу {"A": 1 "B': 0}
+        var_values = dict(zip(variables, i))
+        parsed = parse(expression, var_values)
+        trush_table.append(list(var_values.values()) + [int(parsed)]) # Добавляем в таблицу значения словаря + значения выражения
+        vector += str(int(parsed)) 
+    return trush_table, f'{expression} -> {vector}'
 
-    def get_trush_table():
-        table_init = PrettyTable(variables + ['F']) #Иницаилизируем таблицу и векторный вид
-        vector = ''
-        for i in product((0, 1), repeat=len(variables)): # Перебираем нули и единицы и создаем словарь по типу {"A": 1 "B': 0}
-            var_values = dict(zip(variables, i))
-            parsed = parse(expression, var_values)
-            trush_table.append(list(var_values.values()) + [int(parsed)]) # Добавляем в таблицу значения словаря + значения выражения
-            vector += str(int(parsed)) 
-        table_init.add_rows(trush_table)
-        print(table_init)  # Печатаем саму таблицу и векторный вид
-        print(f'{expression} -> {vector}') 
-
-    get_trush_table()
-
-    def get_sdnf():
-        sdnf_disjuncts = []
-        for row in trush_table:  # Перебираем таблицу истинности
-            if row[-1] == 1:
-                conjuncts = [] 
-                for var, var_value in zip(variables, row[:-1]): # Если F = 1 то обьединяем переменные с их значениями в таблице
-                    if var_value == 1:
-                        conjuncts.append(var) # Если 0 то добавляем в список коньюнктов переменную с отрицанием
-                    else:
-                        conjuncts.append(f'!{var}')
-                sdnf_disjuncts.append('&'.join(conjuncts))
-        print("СДНФ: ", ' | '.join(sdnf_disjuncts)) # Собираем СДНФ
-
-    get_sdnf()
+def get_sdnf(trush_table, variables):
+    sdnf_disjuncts = []
+    for row in trush_table:  # Перебираем таблицу истинности
+        if row[-1] == 1:
+            conjuncts = [] 
+            for var, var_value in zip(variables, row[:-1]): # Если F = 1 то обьединяем переменные с их значениями в таблице
+                if var_value == 1:
+                    conjuncts.append(var) # Если 0 то добавляем в список коньюнктов переменную с отрицанием
+                else:
+                    conjuncts.append(f'!{var}')
+            sdnf_disjuncts.append('&'.join(conjuncts))
+    return "СДНФ: " + ' | '.join(sdnf_disjuncts) # Собираем СДНФ
 
 
 def main():
@@ -105,7 +96,11 @@ def main():
         count = int(input("Введите кол-во переменных >>> "))
         variables = sorted([input("Введите переменную >>> ") for _ in range(count)])
         expression = input("Введите выражение >>> ")
-        get_data_for_function(expression, variables)
+        table, vector = get_trush_table(expression, variables)
+        table_init = PrettyTable(variables + ['F']) #Иницаилизируем таблицу и векторный вид
+        table_init.add_rows(table)
+        print(f'{table_init}\n\n{vector}\n')
+        print(get_sdnf(table, variables))
     except ValueError:
         print("Неверный формат числа")
         main()
