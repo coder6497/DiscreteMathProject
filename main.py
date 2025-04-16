@@ -1,8 +1,9 @@
 import asyncio
-from function_processing import get_trush_table, get_sdnf, trush_table
+from function_processing import get_trush_table, get_sdnf
 from telebot.async_telebot import AsyncTeleBot
 from token_file import token
 from telebot import types
+from prettytable import PrettyTable
 
 bot = AsyncTeleBot(token)
 
@@ -21,13 +22,15 @@ async def get_data(message):
     args = message.text.split()[1:]
     variables = sorted(args[0].split(','))
     expression = args[1]
+    table, vector = get_trush_table(expression, variables)
+    table_to_view = PrettyTable(variables + ['F'])
+    table_to_view.add_rows(table)
     try:
         await bot.send_message(message.chat.id,
                                 f"""```txt\nТаблица истинности для функции {expression}\n
-                                        {get_trush_table(expression, variables)}\n
-                                        {get_sdnf(variables)}\n```""",
+                                        {table_to_view.get_string()}\n\n{vector}\n\n
+                                        {get_sdnf(table, variables)}\n```""",
                                   parse_mode='MarkdownV2')
-        trush_table.clear()
     except IndexError:
         await bot.reply_to(message, "Неверный формат выражения!")
 
