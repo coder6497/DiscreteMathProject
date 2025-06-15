@@ -1,5 +1,7 @@
 from itertools import product
 from prettytable import PrettyTable
+import re
+
 
 class Stack: # Класс для реализации стека
     def __init__(self):
@@ -20,8 +22,8 @@ class Stack: # Класс для реализации стека
 
 def parse(expression, variables): # Функция для парсинга логических выражений
     def get_postfix():
-        tokens = list(filter(lambda x: x != ' ', expression))  
-        precendence = {'(': 0, "!": 3, '&': 2, '|': 1} #Приоритет операций
+        tokens = re.findall(r'[a-z]|[&!|^()=]|->', expression)
+        precendence = {'(': 0, "!": 5, '&': 4, '|': 3, '^': 3, '->': 2, '=': 1} #Приоритет операций
         operators = Stack()
         output = []
         for tk in tokens:  # Если буква то добавляем на выход если ( то в стек операторов
@@ -63,6 +65,12 @@ def parse(expression, variables): # Функция для парсинга ло�
                     stack.push(a and b)
                 if token == '|':
                     stack.push(a or b)
+                if token == '->':
+                    stack.push(not a or b)
+                if token == '^':
+                    stack.push(a ^ b)
+                if token == '=':
+                    stack.push(a == b)
         return stack.top()
     return get_result(get_postfix())
 
